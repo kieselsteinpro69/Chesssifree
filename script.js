@@ -1,89 +1,81 @@
-const board = document.getElementById("board");
-const columns_sorted = ["a" , "b", "c", "d", "e", "f", "g", "h"];
-const chess_default_position = [
-    ["bR", "bN", "bB", "bQ", "bK", "bB", "bN", "bR"], // Reihe 8
-    ["bP", "bP", "bP", "bP", "bP", "bP", "bP", "bP"], // Reihe 7
-    [null, null, null, null, null, null, null, null], // Reihe 6
-    [null, null, null, null, null, null, null, null], // Reihe 5
-    [null, null, null, null, null, null, null, null], // Reihe 4
-    [null, null, null, null, null, null, null, null], // Reihe 3
-    ["wP", "wP", "wP", "wP", "wP", "wP", "wP", "wP"], // Reihe 2
-    ["wR", "wN", "wB", "wQ", "wK", "wB", "wN", "wR"]  // Reihe 1
-  ];
-  const pieces = {
-    wK: "♔", wQ: "♕", wR: "♖", wB: "♗", wN: "♘", wP: "♙",
-    bK: "♚", bQ: "♛", bR: "♜", bB: "♝", bN: "♞", bP: "♟"
+// Chess game with timer using chess.js and chessboard.js
+let board = null;
+let game = new Chess();
+let activeColor = 'w';
+let whiteTime = 300;
+let blackTime = 300;
+let timerId = null;
+
+function init() {
+  document.getElementById('startBtn').addEventListener('click', startGame);
+  updateClocks();
+  const config = {
+    draggable: true,
+    position: 'start',
+    onDragStart: onDragStart,
+    onDrop: onDrop,
+    onSnapEnd: onSnapEnd
   };
-let tile_Data = {};
+  board = Chessboard('board', config);
+}
 
+function startGame() {
+  const minutes = parseInt(document.getElementById('timeInput').value, 10) || 5;
+  whiteTime = blackTime = minutes * 60;
+  game.reset();
+  board.start();
+  activeColor = 'w';
+  updateClocks();
+  if (timerId) clearInterval(timerId);
+  timerId = setInterval(tick, 1000);
+}
 
-
-create_board();
-create_starting_position();
-
-
-
-
-
-function create_starting_position(){ //Uses 2D Array to create starting position
-
-    for (let row = 0; row < 8; row++){
-
-        for (let col = 0; col < 8; col++){
-
-            let current_tile = columns_sorted[col] + (8 - row);
-            let current_piece = chess_default_position[row][col];
-          
-            
-
-           if (pieces[current_piece]){
-
-              document.getElementById(current_tile).innerText = pieces[current_piece];
-              
-              tile_Data[current_tile] = {
-                piece: current_piece,
-                occupied: true
-              };
-
-           }else{
-            tile_Data[current_tile] = {
-                piece: null,
-                occupied: false         
-            };
-           }
-          
-        }
+function tick() {
+  if (activeColor === 'w') {
+    whiteTime--;
+    if (whiteTime <= 0) {
+      clearInterval(timerId);
+      alert('Black wins on time');
     }
-    console.log(tile_Data);
-}
-
-
-
-
-function create_board(){//Create 8*8 grid with every 2nd tile being black
-
-for (let row = 0; row < 8; row++){
-
-    for (let col = 0; col < 8; col++){
-
-        let tile = document.createElement("div");
-        tile.classList.add("tile");
-        
-
-        if((row + col ) % 2 === 0){
-            tile.classList.add("white_tile");
-        }else{
-            tile.classList.add("black_tile")
-        }
-           
-        let get_tile_id = columns_sorted[col] + (8 - row); //Id for every column
-
-        tile.id = get_tile_id;
-  
-
-    board.appendChild(tile);
+  } else {
+    blackTime--;
+    if (blackTime <= 0) {
+      clearInterval(timerId);
+      alert('White wins on time');
     }
+  }
+  updateClocks();
 }
 
-
+function updateClocks() {
+  document.getElementById('whiteTime').textContent = formatTime(whiteTime);
+  document.getElementById('blackTime').textContent = formatTime(blackTime);
 }
+
+function formatTime(seconds) {
+  const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+  const s = (seconds % 60).toString().padStart(2, '0');
+  return `${m}:${s}`;
+}
+
+function onDragStart(source, piece) {
+  if (game.game_over()) return false;
+  if (game.turn() === 'w' && piece.search(/^b/) !== -1) return false;
+  if (game.turn() === 'b' && piece.search(/^w/) !== -1) return false;
+}
+
+function onDrop(source, target) {
+  const move = game.move({ from: source, to: target, promotion: 'q' });
+  if (move === null) return 'snapback';
+  activeColor = game.turn();
+}
+
+function onSnapEnd() {
+  board.position(game.fen());
+  if (game.game_over()) {
+    clearInterval(timerId);
+    setTimeout(() => alert('Game over'), 50);
+  }
+}
+
+window.addEventListener('load', init);

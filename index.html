@@ -1,20 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Schachspiel</title>
-    <link rel="stylesheet" href="style/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Responsive Chess Game</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chessboard.js/1.0.0/chessboard.min.css">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="board">
-
+  <div class="container">
+    <div id="board" class="board"></div>
+    <div class="controls">
+      <label for="timeInput">Minutes per player:</label>
+      <input type="number" id="timeInput" min="1" value="5">
+      <button id="startBtn">Start Game</button>
+      <div class="clock">
+        <div>White: <span id="whiteTime">05:00</span></div>
+        <div>Black: <span id="blackTime">05:00</span></div>
+      </div>
     </div>
-
-
-
-
-
-    <script src="logic/script.js"></script>
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/1.0.0/chess.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chessboard.js/1.0.0/chessboard.min.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
